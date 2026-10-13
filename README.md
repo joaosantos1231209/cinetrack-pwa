@@ -22,9 +22,14 @@
 
 ## 🌟 Visão Geral
 
-O **CineTrack** permite a qualquer utilizador criar uma conta gratuita, explorar dezenas de milhares de filmes e séries de todo o mundo com dados em tempo real, gerir as suas listas (*Quero Ver*, *A Ver*, *Visto*) e controlar o seu progresso episódio a episódio e temporada a temporada.
+O **CineTrack** foi originalmente desenvolvido para **uso pessoal**, com o objetivo de criar uma experiência de catálogo fluida, moderna e sem distrações para acompanhar filmes e séries.
 
-Toda a informação pessoal é guardada de forma segura na nuvem através do **Supabase**, sincronizando instantaneamente entre telemóvel, tablet e computador.
+No entanto, a aplicação foi concebida com uma arquitetura aberta e escalável: **qualquer pessoa pode utilizá-la livremente** através do link público ([https://series-and-filmes.vercel.app](https://series-and-filmes.vercel.app)) ao criar a sua própria conta gratuita na plataforma.
+
+Cada utilizador tem o seu espaço completamente isolado e privado:
+- **Registo Rápido e Gratuito:** Basta um email e password para começar.
+- **Listas e Dados Pessoais:** As listas (*Quero Ver*, *A Ver*, *Visto*), notas privadas, avaliações pessoais e histórico de episódios pertencem exclusivamente à conta de cada pessoa.
+- **Sincronização Cloud:** Toda a informação é guardada de forma segura na nuvem através do **Supabase**, sincronizando instantaneamente entre telemóvel, tablet e computador.
 
 ---
 
