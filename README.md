@@ -248,6 +248,9 @@ Todas as variáveis de ambiente (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, 
 
 ## 🏷️ Histórico de Versões
 
+- **`v1.5.0`**:
+  - Remoção da barreira de confirmação de email no registo de conta (acesso e login direto e imediato).
+  - Edição do nome de perfil: o nome fica automaticamente o email no registo, mas pode ser alterado a qualquer momento no Perfil com feedback em tempo real.
 - **`v1.4.0`**:
   - Adição dos dois novos destaques principais na Página Inicial: *Melhores Filmes de Sempre* e *Melhores Séries de Sempre* (ordenados por classificação histórica).
   - Adição do filtro de ordenação por avaliação (*⭐ Mais Bem Avaliados*) na aba de Pesquisa.
