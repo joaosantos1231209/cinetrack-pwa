@@ -7,6 +7,7 @@ interface AuthContextType {
   user: User | null
   loading: boolean
   signOut: () => Promise<void>
+  updateProfile: (displayName: string) => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -14,6 +15,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
   signOut: async () => {},
+  updateProfile: async () => {},
 })
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -37,8 +39,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await supabase.auth.signOut()
   }
 
+  const updateProfile = async (displayName: string) => {
+    const trimmed = displayName.trim()
+    const { data, error } = await supabase.auth.updateUser({
+      data: {
+        display_name: trimmed,
+        name: trimmed,
+      },
+    })
+    if (error) throw error
+    if (data.user) {
+      setSession(prev => prev ? { ...prev, user: data.user } : prev)
+    }
+  }
+
   return (
-    <AuthContext.Provider value={{ session, user: session?.user ?? null, loading, signOut }}>
+    <AuthContext.Provider value={{ session, user: session?.user ?? null, loading, signOut, updateProfile }}>
       {children}
     </AuthContext.Provider>
   )

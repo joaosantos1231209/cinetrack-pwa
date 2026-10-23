@@ -13,8 +13,18 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 // ─── Auth helpers ─────────────────────────────────────────────────────────────
 
 export const authService = {
-  async signUp(email: string, password: string) {
-    const { data, error } = await supabase.auth.signUp({ email, password })
+  async signUp(email: string, password: string, displayName?: string) {
+    const defaultName = displayName || email.split('@')[0]
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          display_name: defaultName,
+          name: defaultName,
+        },
+      },
+    })
     if (error) throw error
     return data
   },
@@ -23,6 +33,17 @@ export const authService = {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) throw error
     return data
+  },
+
+  async updateProfile(displayName: string) {
+    const { data, error } = await supabase.auth.updateUser({
+      data: {
+        display_name: displayName.trim(),
+        name: displayName.trim(),
+      },
+    })
+    if (error) throw error
+    return data.user
   },
 
   async signOut() {

@@ -1,13 +1,16 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { User, LogOut, Film, Settings, ChevronRight, Mail, X, Trash2, Moon, Database, Check } from 'lucide-react'
+import { User, LogOut, Film, Settings, ChevronRight, Mail, X, Trash2, Moon, Database, Check, Pencil, Loader2 } from 'lucide-react'
 import Layout from '@/components/layout/Layout'
 import { useAuth } from '@/contexts/AuthContext'
 
 export default function ProfilePage() {
-  const { user, signOut } = useAuth()
+  const { user, signOut, updateProfile } = useAuth()
   const navigate = useNavigate()
   const [showSettings, setShowSettings] = useState(false)
+  const [showEditNameModal, setShowEditNameModal] = useState(false)
+  const [newNameInput, setNewNameInput] = useState('')
+  const [savingName, setSavingName] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
 
   const showToastMsg = (msg: string) => {
@@ -54,10 +57,36 @@ export default function ProfilePage() {
     )
   }
 
-  const avatarLetter = user.email?.[0]?.toUpperCase() || 'U'
+  const displayName =
+    user.user_metadata?.display_name ||
+    user.user_metadata?.name ||
+    user.email?.split('@')[0] ||
+    'Utilizador'
+
+  const avatarLetter = (displayName[0] || user.email?.[0] || 'U').toUpperCase()
   const joinedDate = new Date(user.created_at || Date.now()).toLocaleDateString('pt-PT', {
     year: 'numeric', month: 'long',
   })
+
+  const openEditName = () => {
+    setNewNameInput(displayName)
+    setShowEditNameModal(true)
+  }
+
+  const handleSaveName = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newNameInput.trim()) return
+    setSavingName(true)
+    try {
+      await updateProfile(newNameInput.trim())
+      showToastMsg('Nome de perfil atualizado!')
+      setShowEditNameModal(false)
+    } catch {
+      showToastMsg('Erro ao atualizar nome.')
+    } finally {
+      setSavingName(false)
+    }
+  }
 
   return (
     <Layout>
@@ -122,16 +151,46 @@ export default function ProfilePage() {
           {avatarLetter}
         </div>
         <div style={{ textAlign: 'center' }}>
-          <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 4 }}>
-            {user.email?.split('@')[0]}
-          </h2>
-          <p style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>Membro desde {joinedDate}</p>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, justifyContent: 'center' }}>
+            <h2 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>
+              {displayName}
+            </h2>
+            <button
+              id="profile-edit-name-btn"
+              onClick={openEditName}
+              style={{
+                background: 'rgba(255,255,255,0.08)',
+                border: '1px solid var(--color-border)',
+                borderRadius: '50%',
+                width: 30,
+                height: 30,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'var(--color-text-secondary)',
+                cursor: 'pointer',
+                transition: 'background 0.2s',
+              }}
+              title="Mudar nome"
+              aria-label="Mudar nome de perfil"
+            >
+              <Pencil size={14} />
+            </button>
+          </div>
+          <p style={{ fontSize: 13, color: 'var(--color-text-muted)', marginTop: 4 }}>Membro desde {joinedDate}</p>
         </div>
       </div>
 
       {/* Menu items */}
       <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
         <MenuSection>
+          <MenuItem
+            id="profile-name"
+            icon={<User size={18} />}
+            label="Nome de perfil"
+            value={displayName}
+            onClick={openEditName}
+          />
           <MenuItem
             id="profile-email"
             icon={<Mail size={18} />}
@@ -166,7 +225,7 @@ export default function ProfilePage() {
 
       {/* Version badge */}
       <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--color-text-muted)', margin: '28px 0 12px' }}>
-        CineTrack v1.4.0
+        CineTrack v1.5.0
       </p>
 
       {/* Settings Modal */}
@@ -271,6 +330,107 @@ export default function ProfilePage() {
             <button className="btn btn-primary btn-full" onClick={() => setShowSettings(false)}>
               Concluído
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Name Modal */}
+      {showEditNameModal && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.8)',
+            backdropFilter: 'blur(6px)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 16,
+          }}
+          onClick={() => !savingName && setShowEditNameModal(false)}
+        >
+          <div
+            style={{
+              width: '100%',
+              maxWidth: 400,
+              background: 'var(--color-bg-card)',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-xl)',
+              padding: 24,
+              boxShadow: '0 20px 50px rgba(0,0,0,0.8)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <User size={20} color="var(--color-accent)" />
+                <h3 style={{ fontSize: 18, fontWeight: 800 }}>Mudar Nome de Perfil</h3>
+              </div>
+              <button
+                onClick={() => setShowEditNameModal(false)}
+                disabled={savingName}
+                style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer' }}
+                aria-label="Fechar"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <p style={{ fontSize: 13, color: 'var(--color-text-muted)', marginBottom: 20, lineHeight: 1.5 }}>
+              Escolhe como queres ser chamado no CineTrack. O teu email original continuará a ser utilizado para iniciar sessão.
+            </p>
+
+            <form onSubmit={handleSaveName}>
+              <div style={{ marginBottom: 20 }}>
+                <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 8, color: 'var(--color-text-secondary)' }}>
+                  Novo Nome
+                </label>
+                <input
+                  id="profile-name-input"
+                  type="text"
+                  value={newNameInput}
+                  onChange={(e) => setNewNameInput(e.target.value)}
+                  placeholder="Ex: João Santos"
+                  autoFocus
+                  required
+                  maxLength={50}
+                  style={{
+                    width: '100%',
+                    padding: '12px 14px',
+                    borderRadius: 8,
+                    background: 'var(--color-bg-secondary)',
+                    border: '1px solid var(--color-border)',
+                    color: 'var(--color-text-primary)',
+                    fontSize: 15,
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  style={{ flex: 1 }}
+                  disabled={savingName}
+                  onClick={() => setShowEditNameModal(false)}
+                >
+                  Cancelar
+                </button>
+                <button
+                  id="profile-save-name-btn"
+                  type="submit"
+                  className="btn btn-primary"
+                  style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                  disabled={savingName || !newNameInput.trim()}
+                >
+                  {savingName ? <Loader2 size={16} className="animate-spin" /> : null}
+                  {savingName ? 'A guardar...' : 'Guardar'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

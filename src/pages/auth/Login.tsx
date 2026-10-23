@@ -24,7 +24,7 @@ export default function LoginPage() {
       if (message.includes('Invalid login credentials')) {
         setError('Email ou password incorretos. Tenta novamente.')
       } else if (message.includes('Email not confirmed')) {
-        setError('Confirma o teu email antes de iniciar sessão.')
+        setError('Conta pendente de ativação no Supabase. (Nota: desativa "Confirm email" no dashboard Supabase para acesso direto).')
       } else {
         setError(message)
       }

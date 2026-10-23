@@ -12,7 +12,6 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
-  const [needsConfirm, setNeedsConfirm] = useState(false)
 
   const passwordStrength = password.length === 0 ? 0
     : password.length < 6 ? 1
@@ -39,13 +38,20 @@ export default function RegisterPage() {
     setLoading(true)
 
     try {
-      const data = await authService.signUp(email, password)
-      if (data.session) {
-        setSuccess(true)
-        setTimeout(() => navigate('/'), 1500)
-      } else {
-        setNeedsConfirm(true)
+      const defaultName = email.split('@')[0]
+      const data = await authService.signUp(email, password, defaultName)
+      
+      // Inicia sessão automaticamente caso não venha logo na resposta
+      if (!data.session) {
+        try {
+          await authService.signIn(email, password)
+        } catch {
+          // Continua para o redirecionamento
+        }
       }
+
+      setSuccess(true)
+      setTimeout(() => navigate('/'), 1200)
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Erro ao criar conta'
       if (message.includes('User already registered')) {
@@ -56,36 +62,6 @@ export default function RegisterPage() {
     } finally {
       setLoading(false)
     }
-  }
-
-  if (needsConfirm) {
-    return (
-      <div className="auth-page">
-        <div className="auth-card slide-up" style={{ textAlign: 'center' }}>
-          <div
-            style={{
-              width: 64,
-              height: 64,
-              borderRadius: '50%',
-              background: 'rgba(96, 165, 250, 0.15)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 20px',
-            }}
-          >
-            <CheckCircle size={32} color="#60a5fa" />
-          </div>
-          <h2 style={{ fontSize: 22, marginBottom: 8 }}>Verifica o teu Email</h2>
-          <p style={{ color: 'var(--color-text-muted)', fontSize: 14, marginBottom: 20 }}>
-            Enviámos um link de confirmação para <strong>{email}</strong>. Clica no link para ativar a conta e depois inicia sessão.
-          </p>
-          <button className="btn btn-primary btn-full" onClick={() => navigate('/login')}>
-            Ir para Iniciar Sessão
-          </button>
-        </div>
-      </div>
-    )
   }
 
   if (success) {
